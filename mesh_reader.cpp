@@ -1,57 +1,58 @@
 #include <iostream>
-#include <stdio.h>
-#include <fstream>
-#include <string>
-#include <cmath>
 #include <vector>
-// function to read in nelem,ndim,npoin,nface,time,ntype
+#include <sstream>
+#include <fstream>
+using namespace std;
 
-class mymatrix{
-  public:
-    int rows;
-    int cols;
-    int offset;
-
-    void m_vec(int data)// function to get the vector for a matrix/array
+std::vector<int> strconv(std::string s) // function to get row of the matrix from one line of the text file
+{
+  stringstream ss; //declaration of string stream object
+  ss << s; //push string to stringstream object
+  std::vector<int> tempvec; //declare an empty vector
+  std::string tempstr; //declare an empty string
+  int val; // val to be pushed to tempvec
+  while(!ss.eof())
+  {
+    ss >> tempstr; //push string to temp string word by word
+    if(stringstream(tempstr)>>val)
     {
-
-      
-      std::vector<std::vector<int>> v;  //initialize an empty vector    
-      for(int i=0;i<rows;i++){
-        std::vector<int> tempvec;  //initialize an empty temp vector
-        for (int j = 0;j<cols;j++){
-         tempvec.push_back(data);  // push in data for each col at the end
-        }
-        v.push_back(tempvec);
-
-      }
+      tempvec.push_back(val);
     }
-
-
-
-};
-
-// function to read the connectivity matrix from the input data
-void inpoel_read(){
-int nelem = 1559;
-int npoin = 839;
-int nface = 117;
-int ntype = 3;
-int ndimn = 2;
-int inpoel[nelem][ntype];// array to represent connectivity matrix
-
-}
-// function to read in the co-ordinates of the points
-void coord_read(){
-
-
-}
-// function to write the data in .msh ASCII format for gmsh to read 
-void gmsh_write(){
-
+  
+  }
+  return tempvec; //return val of the function, is the row of the matrix
 }
 
-int main(){
-  return 0;
+
+std::vector<std::vector<int>> main_vec(std::string s1)
+{
+  std::vector<std::vector<int>> mainvec; //main_vec
+  std::ifstream file(s1); // file object 
+  if (file.is_open())
+  {
+    std::string line;
+    while(std::getline(file,line))
+    {
+      std::vector<int> tempv;
+      tempv = strconv(line);
+      mainvec.push_back(tempv);
+    }
+   
+  }
+
+  
+  
+
+  return mainvec;
+}
+
+
+int main()
+{
+  std::vector<std::vector<int>> mm;
+mm = main_vec("shri.txt");
+std::cout<<mm[35][0];
+return 0;
+
 }
 
