@@ -55,7 +55,7 @@ struct vs // struct definition for the two main arrays to be used
 };
 
 
-vs trimvec(std::vector<std::vector<double>> vec1) // function to get two vecvecs  from big vecvec return type is struct vs
+vs trimvec(std::vector<std::vector<double>> vec1) // function to trim main matrix to get 2 matrices
 {
   //nelem 7,0 npoin 7,1 nface 7,2 ndimn 5,0 ntype 5,1 intpoel starts from 9, locations from Dr H file
   vs vs1;
@@ -83,30 +83,31 @@ vs trimvec(std::vector<std::vector<double>> vec1) // function to get two vecvecs
   } 
   return vs1;
 }
-
-void writegmsh(std::vector<std::vector<double>> i,std::vector<std::vector<double>> c) //function to write out data for gmsh to read
+//function to write out mesh in vtk format.
+void writevtk(std::vector<vector<double>> i, std::vector<std::vector<double>> c)
 {
-  int nelem = i.size(); //number of lines for for loop to write element data in gmsh file
-  int npoin = c.size(); //number of lines for for loopt to write node data in gmsh file
-  int ntype = c[0].size()-1; //type 2 is for triangle
-  ofstream file1 ("feflo.msh"); //name of .msh file 
-  if (file1.is_open())
+  int nelem = i.size();
+  int npoin = c.size();
+  int ntype = c[0].size();
+  ofstream file1 ("feflo.vtk");
+  if(file1.is_open())
   {
-    file1 << "$MeshFormat\n2.0 0 8\n$EndMeshFormat\n$Nodes\n"<< npoin <<"\n";
-    //begin for loop to write out node numbers and coords
+    file1 <<"# vtk DataFile Version 2.0\nfeflo\nASCII\nDATASET UNSTRUCTURED_GRID\nPOINTS "<<npoin<<" double  "<<"\n";
     for(int i = 0;i<npoin;i++)
     {
-      file1 <<i+1<<" "<<c[i][1]<<" "<<c[i][2]<<" "<<"0 \n";
+      file1 <<c[i][1]<<" "<<c[i][2]<<" "<<"0 \n";
     }
-    file1 << "$EndNodes \n$Elements\n"<<nelem<<"\n";
-    //begin for loop to write out element connectivity in gmsh format.
-    for(int k =0;k<nelem;k++)
+    file1 <<"CELLS "<<nelem<<" "<<ntype*nelem + nelem<<"\n";
+    for(int k=0;k<nelem;k++)
     {
-      file1<<i[k][0]<<" "<<" "<<ntype<<" "<<" 0 "<<i[k][1]<<" "<<i[k][2]<<" "<<i[k][3]<<"\n";
+      file1 <<ntype<<" "<<i[k][1]-1<<" "<<i[k][2]-1<<" "<<i[k][3]-1<<"\n";
     }
-    file1<<"$EndElements";
+    file1 << "CELL_TYPES "<<nelem<<"\n";
+    for(int k=0;k<nelem;k++)
+    {
+      file1<<ntype+2<<"\n";
+    } 
   }
-  file1.close();
 }
 
 int main()
@@ -116,11 +117,9 @@ int main()
   mm = main_vec("shri.txt"); // function call to get entire numerical data from file stored in one big vector.
   vs vss = trimvec(mm); //trim the vector down to get only two matrices
   /*std::cout<<vss.coords[11][1]<<"this shit"<<mm[1586][1]<<endl;*/ //used to check code
-  writegmsh(vss.intpoel,vss.coords); //function call that writes out feflo.msh file for gmsh to read
+  writevtk(vss.intpoel,vss.coords); //function call that writes out feflo.msh file for gmsh to read
   auto stop = high_resolution_clock::now(); //stop clock
   auto duration = duration_cast<microseconds>(stop - start);//get run time
   cout << duration.count()<< endl;
   return 0;
 }
-
-
